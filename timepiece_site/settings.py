@@ -50,7 +50,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-]
+
 
 ROOT_URLCONF = "timepiece_site.urls"
 
