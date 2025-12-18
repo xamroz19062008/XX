@@ -832,3 +832,74 @@ img {
   background: #f2d57c;
   color: black;
 }
+/* MOBILE FIXES */
+
+@media (max-width: 640px) {
+  .container {
+    padding: 0 14px;
+  }
+
+  .header-inner {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .logo {
+    font-size: 18px;
+  }
+
+  /* прячем меню, чтобы не занимало место */
+  .nav {
+    display: none;
+  }
+
+  /* правая часть шапки в колонку */
+  .header-right {
+    width: 100%;
+    margin-left: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .header-right .btn {
+    width: 100%;
+  }
+
+  .auth-area,
+  .auth-links {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .auth-links,
+  .auth-links a {
+    font-size: 14px;
+  }
+}
+.cart-block {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cart-table {
+  width: 100%;
+  min-width: 680px; /* чтобы таблица не ломалась в кашу */
+  border-collapse: collapse;
+}
+@media (max-width: 640px) {
+  .btn {
+    padding: 12px 16px;
+    font-size: 13px;
+  }
+
+  .section-title {
+    font-size: 26px;
+    line-height: 1.15;
+  }
+
+  .glass-panel {
+    border-radius: 16px;
+  }
+}
