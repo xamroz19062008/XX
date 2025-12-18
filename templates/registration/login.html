@@ -1,0 +1,42 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Войти — TIMEPIECE</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+  </head>
+  <body>
+    <header class="header glass-panel">
+      <div class="container header-inner">
+        <a href="/" class="logo">TIMEPIECE</a>
+        <nav class="nav">
+          <a href="/catalog/">Каталог</a>
+          <a href="/cart/">Корзина</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="section">
+      <div class="container">
+        <div
+          class="glass-panel"
+          style="padding: 32px; max-width: 480px; margin: 0 auto"
+        >
+          <h1 class="section-title">Войти</h1>
+
+          <form method="post">
+            {% csrf_token %} {{ form.as_p }}
+
+            <button class="btn btn-primary" type="submit">Войти</button>
+          </form>
+
+          <p style="margin-top: 12px">
+            Нет аккаунта?
+            <a href="{% url 'signup' %}">Зарегистрироваться</a>
+          </p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

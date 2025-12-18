@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Мой аккаунт — TIMEPIECE</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+  </head>
+  <body>
+    <header class="header glass-panel">
+      <div class="container header-inner">
+        <a href="/" class="logo">TIMEPIECE</a>
+
+        <nav class="nav">
+          <a href="/catalog/">Каталог</a>
+          <a href="/cart/">Корзина</a>
+        </nav>
+
+        <div class="auth-links">
+          {% if user.is_authenticated %}
+          <span class="mono" style="margin-right: 16px"
+            >{{ user.username }}</span
+          >
+          <a href="{% url 'logout' %}">Выйти</a>
+          {% else %}
+          <a href="{% url 'login' %}">Войти</a>
+          <a href="{% url 'signup' %}">Регистрация</a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    <main class="section">
+      <div class="container">
+        <div class="glass-panel" style="padding: 32px">
+          <h1 class="section-title">Мой аккаунт</h1>
+
+          <p><strong>Логин:</strong> {{ user.username }}</p>
+          <p><strong>Телефон:</strong> {{ user.profile.phone }}</p>
+          <p><strong>Локация:</strong> {{ user.profile.location }}</p>
+
+          <h2 class="section-title" style="margin-top: 24px">Мои заказы</h2>
+
+          {% if orders %}
+          <ul class="order-list">
+            {% for order in orders %}
+            <li
+              class="order-item glass-panel"
+              style="margin: 12px 0; padding: 16px"
+            >
+              <p>
+                <strong>Заказ #{{ order.id }}</strong> —
+                <span class="order-status"
+                  >Статус: {{ order.get_status_display }}
+                </span>
+              </p>
+
+              <p>Создан: {{ order.created_at }}</p>
+              <p>Адрес: {{ order.location }}</p>
+              <p>Телефон: {{ order.phone }}</p>
+              <p>Сумма: {{ order.total_amount }} сум</p>
+            </li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <p>У вас пока нет заказов.</p>
+          {% endif %}
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,89 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Регистрация — TIMEPIECE</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+  </head>
+  <body>
+    <header class="header glass-panel">
+      <div class="container header-inner">
+        <a href="/" class="logo">TIMEPIECE</a>
+        <nav class="nav">
+          <a href="/catalog/">Каталог</a>
+          <a href="/cart/">Корзина</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="section">
+      <div class="container">
+        <div
+          class="glass-panel"
+          style="padding: 32px; max-width: 520px; margin: 0 auto"
+        >
+          <h1 class="section-title" style="margin-bottom: 24px">Регистрация</h1>
+
+          <form method="post" class="auth-form">
+            {% csrf_token %}
+
+            <!-- ЛОГИН -->
+            <div class="form-row" style="margin-bottom: 16px">
+              <label for="{{ form.username.id_for_label }}">Логин</label>
+              {{ form.username }} {% if form.username.errors %}
+              <div class="field-error">{{ form.username.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- ПАРОЛЬ -->
+            <div class="form-row" style="margin-bottom: 16px">
+              <label for="{{ form.password1.id_for_label }}">Пароль</label>
+              {{ form.password1 }} {% if form.password1.errors %}
+              <div class="field-error">{{ form.password1.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- ПОДТВЕРЖДЕНИЕ ПАРОЛЯ -->
+            <div class="form-row" style="margin-bottom: 16px">
+              <label for="{{ form.password2.id_for_label }}"
+                >Повторите пароль</label
+              >
+              {{ form.password2 }} {% if form.password2.errors %}
+              <div class="field-error">{{ form.password2.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- ТЕЛЕФОН (опционально) -->
+            <div class="form-row" style="margin-bottom: 24px">
+              <label for="{{ form.phone.id_for_label }}"
+                >Телефон (необязательно)</label
+              >
+              {{ form.phone }} {% if form.phone.errors %}
+              <div class="field-error">{{ form.phone.errors }}</div>
+              {% endif %}
+            </div>
+
+            <!-- Общие ошибки формы -->
+            {% if form.non_field_errors %}
+            <div class="form-error-global">{{ form.non_field_errors }}</div>
+            {% endif %}
+
+            <button
+              class="btn btn-primary"
+              type="submit"
+              style="margin-top: 8px"
+            >
+              СОЗДАТЬ АККАУНТ
+            </button>
+          </form>
+
+          <p style="margin-top: 16px">
+            Уже есть аккаунт?
+            <a href="{% url 'login' %}">Войти</a>
+          </p>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

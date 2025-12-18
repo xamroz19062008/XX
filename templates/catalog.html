@@ -1,0 +1,150 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TIMEPIECE — полный каталог часов в Ташкенте</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Manrope:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="header glass-panel">
+      <div class="container header-inner">
+        <a href="/" class="logo">TIMEPIECE</a>
+
+        <nav class="nav">
+          <a href="/#collection">Коллекция</a>
+          <a href="/#about">О нас</a>
+          <a href="/#service">Сервис</a>
+          <a href="/#contacts">Контакты</a>
+          <a href="/cart/">Корзина</a>
+        </nav>
+
+        <div class="auth-links">
+          {% if user.is_authenticated %}
+          <a href="/account/">Аккаунт</a>
+          <a href="{% url 'logout' %}">Выйти</a>
+          {% else %}
+          <a href="{% url 'login' %}">Войти</a>
+          <a href="{% url 'signup' %}">Регистрация</a>
+          {% endif %}
+        </div>
+      </div>
+    </header>
+
+    <main>
+      <section class="section collection">
+        <div class="container">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Полный каталог</h2>
+              <p class="section-subtitle">
+                Все модели, которые сейчас доступны для заказа в Ташкенте. Если
+                не нашёл подходящие часы — напиши в Telegram @xamroz, можно
+                будет сделать подбор под заказ по фото или примеру.
+              </p>
+            </div>
+          </div>
+
+          <div class="collection-grid" id="catalog-grid"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-inner">
+        <div class="footer-left">
+          <div class="logo footer-logo">TIMEPIECE</div>
+          <p class="footer-text">
+            Актуальные модели из последних поставок. Для индивидуального подбора
+            по фото или уточнения наличия — напиши в Telegram @xamroz или
+            позвони по номеру +998&nbsp;94&nbsp;662&nbsp;83&nbsp;08.
+          </p>
+        </div>
+      </div>
+      <div class="footer-bottom mono">
+        © TIMEPIECE, 2025 · Все права защищены.
+      </div>
+    </footer>
+
+    <script>
+      // Получение CSRF-токена из cookies для POST-форм "Купить"
+      function getCsrfToken() {
+        const name = "csrftoken=";
+        const decoded = decodeURIComponent(document.cookie);
+        const ca = decoded.split(";");
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i].trim();
+          if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+
+      async function loadWatches(url, containerId) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error("Failed to load watches");
+
+          const data = await response.json();
+          const grid = document.getElementById(containerId);
+          if (!grid) return;
+
+          grid.innerHTML = "";
+
+          data.items.forEach((item) => {
+            const card = document.createElement("article");
+            card.className = "product-card glass-panel";
+
+            const formattedPrice = new Intl.NumberFormat("ru-RU").format(
+              item.price || 0
+            );
+
+            card.innerHTML = `
+              <div class="product-image">
+                <img src="${item.image_url}" class="product-photo" alt="">
+                <span class="mono product-tag">${item.tag || ""}</span>
+              </div>
+
+              <div class="product-body">
+                <h3 class="product-name">${item.name}</h3>
+                <p class="product-desc">${item.description || ""}</p>
+                <div class="product-meta">
+                  <span class="price">${item.currency} ${formattedPrice}</span>
+                  <span class="badge">${item.badge || ""}</span>
+                </div>
+                <div class="product-actions">
+                  <form method="post" action="/cart/add/${
+                    item.id
+                  }/" class="buy-form">
+                    <input type="hidden" name="quantity" value="1" />
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}" />
+                    <button type="submit" class="btn btn-primary btn-small">Купить</button>
+                  </form>
+                </div>
+              </div>
+            `;
+
+            grid.appendChild(card);
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        // На странице каталога показываем все активные часы
+        loadWatches("/api/watches/all/", "catalog-grid");
+      });
+    </script>
+  </body>
+</html>

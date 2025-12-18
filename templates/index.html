@@ -1,0 +1,404 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>TIMEPIECE — премиальные часы в Ташкенте</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Подключаем стили -->
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+
+    <!-- Шрифты как в дизайне: Playfair Display + Manrope + JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Manrope:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="header glass-panel">
+      <div class="container header-inner">
+        <a href="#top" class="logo">TIMEPIECE</a>
+
+        <nav class="nav">
+          <a href="#collection">Коллекция</a>
+          <a href="#about">О нас</a>
+          <a href="#service">Сервис</a>
+          <a href="#contacts">Контакты</a>
+        </nav>
+
+        <div class="header-right">
+          <a href="#collection" class="btn btn-outline btn-small">
+            Перейти к часам
+          </a>
+
+          <div class="auth-area">
+            {% if user.is_authenticated %}
+            <!-- здесь твой дропдаун "Аккаунт" -->
+            {% else %}
+            <div class="auth-links">
+              <a href="{% url 'login' %}" class="auth-link">Войти</a>
+              <a href="{% url 'signup' %}" class="auth-link">Регистрация</a>
+            </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main id="top">
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-background"></div>
+
+        <div class="container hero-inner">
+          <div class="hero-content">
+            <p class="hero-label mono">НОВАЯ КОЛЛЕКЦИЯ · 2025</p>
+            <h1 class="hero-title">
+              Время<br />
+              под контролем
+            </h1>
+            <p class="hero-text">
+              TIMEPIECE — небольшая студия часов в Ташкенте. Я заказываю модели
+              у проверенных поставщиков в Китае и привожу их в город небольшими
+              партиями, отбирая только те варианты, которые выглядят достойно на
+              руке.
+            </p>
+
+            <p class="hero-text">
+              Если в каталоге нет того, что вы ищете, можно сделать
+              <strong>под заказ по фото</strong> — пришлёте пример в Telegram
+              @xamroz, и я постараюсь найти максимально похожую модель у
+              поставщиков в Китае.
+            </p>
+
+            <div class="hero-actions">
+              <a href="#collection" class="btn btn-primary">
+                Смотреть коллекцию
+              </a>
+              <a href="#about" class="btn btn-ghost">Подробнее о магазине</a>
+            </div>
+
+            <div class="hero-meta">
+              <div class="hero-meta-item">
+                <span class="hero-meta-label mono">Доставка</span>
+                <span class="hero-meta-value">по Ташкенту через Яндекс</span>
+              </div>
+
+              <div class="hero-meta-item">
+                <span class="hero-meta-label mono">Под заказ</span>
+                <span class="hero-meta-value">
+                  если нет нужной модели — сделаем под заказ
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-visual">
+            <div class="watch-card glass-panel">
+              <div class="watch-circle">
+                <img
+                  id="hero-watch-image"
+                  class="hero-watch-photo"
+                  src=""
+                  alt=""
+                />
+              </div>
+              <div class="watch-info">
+                <p class="watch-ref mono" id="hero-watch-ref"></p>
+                <h2 class="watch-name" id="hero-watch-name">TIMEPIECE NOIR</h2>
+                <p class="watch-desc" id="hero-watch-desc">
+                  Подборка самых актуальных моделей из текущей поставки.
+                </p>
+                <div class="watch-bottom">
+                  <span class="price" id="hero-watch-price">сум 0</span>
+                  <a href="#collection" class="btn btn-outline btn-small">
+                    Подробнее
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FEATURES / ПРЕИМУЩЕСТВА -->
+      <section class="section features" id="service">
+        <div class="container">
+          <h2 class="section-title">Как я работаю</h2>
+          <p class="section-subtitle">
+            Это не классический интернет-магазин, а аккуратная подборка моделей,
+            которые я сам заказываю, проверяю и привожу в Ташкент. Можно купить
+            готовые часы из наличия или заказать что-то под себя.
+          </p>
+
+          <div class="features-grid">
+            <div class="feature-item glass-panel">
+              <h3>Поставки из Китая</h3>
+              <p>
+                Заказываю часы у проверенных продавцов и фабрик в Китае. Перед
+                тем как выставить модель в каталог, смотрю качество корпуса,
+                ремешка и хода.
+              </p>
+            </div>
+            <div class="feature-item glass-panel">
+              <h3>Цены в сумах</h3>
+              <p>
+                Все цены указаны в сумах — удобно ориентироваться по бюджету.
+                Можно подобрать модель в нужном диапазоне и обсудить варианты
+                прямо в Telegram.
+              </p>
+            </div>
+            <div class="feature-item glass-panel">
+              <h3>Под заказ по фото</h3>
+              <p>
+                Если не нашли подходящие часы в каталоге — пришлите фото или
+                ссылку на пример в Telegram @xamroz. Попробую найти похожую
+                модель у поставщиков в Китае.
+              </p>
+            </div>
+            <div class="feature-item glass-panel">
+              <h3>Доставка по Ташкенту</h3>
+              <p>
+                Доставляю часы по Ташкенту через Яндекс. Можно договориться о
+                времени, месте встречи и способе передачи, чтобы было
+                максимально удобно.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- COLLECTION / КАТАЛОГ -->
+      <section class="section collection" id="collection">
+        <div class="container">
+          <div class="section-header">
+            <div>
+              <h2 class="section-title">Избранные модели</h2>
+              <p class="section-subtitle">
+                Несколько часов, которые лучше всего передают стиль и качество
+                текущей коллекции. Остальное можно посмотреть в полном каталоге
+                или заказать по фото.
+              </p>
+            </div>
+            <!-- Кнопка для показа полного каталога -->
+            <a href="/catalog/" class="btn btn-ghost btn-small">
+              Полный каталог
+            </a>
+          </div>
+
+          <!-- Пустой контейнер, карточки будут подставляться через JS -->
+          <div class="collection-grid" id="collection-grid"></div>
+        </div>
+      </section>
+
+      <!-- ABOUT / О МАГАЗИНЕ -->
+      <section class="section about" id="about">
+        <div class="container about-inner glass-panel">
+          <div class="about-text">
+            <p class="mono about-label">О МАГАЗИНЕ</p>
+            <h2 class="section-title">Часы под твой вкус и бюджет</h2>
+            <p class="about-body">
+              Я сам подбираю и заказываю часы из Китая, чтобы в Ташкенте была
+              возможность купить интересные модели без долгой международной
+              доставки. Никакого массового ширпотреба — только то, что реально
+              приятно носить.
+            </p>
+            <p class="about-body">
+              Можно выбрать готовые варианты из каталога или прислать пример
+              модели, которая нравится. Я подберу максимально похожий вариант у
+              поставщиков и скажу цену в сумах до заказа.
+            </p>
+          </div>
+          <div class="about-meta">
+            <div class="about-stat">
+              <span class="about-stat-value">Ташкент</span>
+              <span class="about-stat-label">
+                личная встреча или доставка через Яндекс
+              </span>
+            </div>
+            <div class="about-stat">
+              <span class="about-stat-value">Под заказ</span>
+              <span class="about-stat-label">
+                работаю с примерами и фото из Telegram
+              </span>
+            </div>
+            <div class="about-stat">
+              <span class="about-stat-value">Сумы</span>
+              <span class="about-stat-label">
+                прозрачные цены без пересчётов
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- FOOTER / КОНТАКТЫ -->
+    <footer class="footer" id="contacts">
+      <div class="container footer-inner">
+        <div class="footer-left">
+          <div class="logo footer-logo">TIMEPIECE</div>
+          <p class="footer-text">
+            Часы из Китая, привезённые в Ташкент. Можно купить готовую модель из
+            наличия или оформить индивидуальный заказ по фото.
+          </p>
+        </div>
+        <div class="footer-right">
+          <div class="footer-block">
+            <h4>Связаться</h4>
+            <p>Telegram: @xamroz</p>
+            <p>Телефон: +998&nbsp;94&nbsp;662&nbsp;83&nbsp;08</p>
+          </div>
+          <div class="footer-block">
+            <h4>Город</h4>
+            <p>Ташкент, Узбекистан</p>
+            <p>Доставка через Яндекс по городу</p>
+          </div>
+          <div class="footer-block">
+            <h4>Дополнительно</h4>
+            <p>Подбор часов по фото</p>
+            <p>Консультация по выбору модели</p>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom mono">
+        © TIMEPIECE, 2025 · Все права защищены.
+      </div>
+    </footer>
+
+    <!-- JS: выпадающее меню аккаунта -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const btn = document.querySelector(".account-btn");
+        const menu = document.querySelector(".dropdown");
+
+        if (btn && menu) {
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const isOpen = menu.style.display === "flex";
+            menu.style.display = isOpen ? "none" : "flex";
+          });
+
+          document.addEventListener("click", function (e) {
+            if (!e.target.closest(".account-menu")) {
+              menu.style.display = "none";
+            }
+          });
+        }
+      });
+    </script>
+
+    <!-- JS: загрузка часов из /api/watches/ -->
+    <script>
+      async function loadWatches(url, containerId) {
+        try {
+          const response = await fetch(url);
+          if (!response.ok) throw new Error("Failed to load watches");
+
+          const data = await response.json();
+          const grid = document.getElementById(containerId);
+          if (!grid) return;
+
+          grid.innerHTML = "";
+
+          data.items.forEach((item) => {
+            const card = document.createElement("article");
+            card.className = "product-card glass-panel";
+
+            const formattedPrice = new Intl.NumberFormat("ru-RU").format(
+              item.price || 0
+            );
+
+            card.innerHTML = `
+              <div class="product-image">
+                <img src="${item.image_url}" class="product-photo" alt="">
+                <span class="mono product-tag">${item.tag || ""}</span>
+              </div>
+
+              <div class="product-body">
+                <h3 class="product-name">${item.name}</h3>
+                <p class="product-desc">${item.description || ""}</p>
+                <div class="product-meta">
+                  <span class="price">${item.currency} ${formattedPrice}</span>
+                  <span class="badge">${item.badge || ""}</span>
+                </div>
+                <div class="product-actions">
+                  <form method="post" action="/cart/add/${
+                    item.id
+                  }/" class="buy-form">
+                    <input type="hidden" name="quantity" value="1" />
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${getCsrfToken()}" />
+                    <button type="submit" class="btn btn-primary btn-small">Купить</button>
+                  </form>
+                </div>
+              </div>
+            `;
+
+            grid.appendChild(card);
+          });
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      function getCsrfToken() {
+        const name = "csrftoken=";
+        const decoded = decodeURIComponent(document.cookie);
+        const ca = decoded.split(";");
+        for (let i = 0; i < ca.length; i++) {
+          let c = ca[i].trim();
+          if (c.indexOf(name) === 0) {
+            return c.substring(name.length, c.length);
+          }
+        }
+        return "";
+      }
+
+      async function loadHeroWatch() {
+        try {
+          const response = await fetch("/api/watches/hero/");
+          if (!response.ok) throw new Error("Failed to load hero watch");
+
+          const data = await response.json();
+          const item = data.item;
+          if (!item) return;
+
+          const nameEl = document.getElementById("hero-watch-name");
+          const descEl = document.getElementById("hero-watch-desc");
+          const priceEl = document.getElementById("hero-watch-price");
+          const imgEl = document.getElementById("hero-watch-image");
+
+          if (nameEl) nameEl.textContent = item.name;
+          if (descEl) descEl.textContent = item.description || "";
+
+          if (priceEl) {
+            const formattedPrice = new Intl.NumberFormat("ru-RU").format(
+              item.price || 0
+            );
+            priceEl.textContent = `${item.currency} ${formattedPrice}`;
+          }
+
+          if (imgEl) {
+            if (item.image_url) {
+              imgEl.src = item.image_url;
+              imgEl.style.display = "block";
+            } else {
+              imgEl.style.display = "none";
+            }
+          }
+        } catch (e) {
+          console.error(e);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        loadHeroWatch();
+        loadWatches("/api/watches/featured/", "collection-grid");
+      });
+    </script>
+  </body>
+</html>
