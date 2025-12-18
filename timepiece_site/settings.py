@@ -133,3 +133,13 @@ TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
 LOGIN_URL = "/accounts/login/"
 LOGIN_REDIRECT_URL = "/account/"
+CSRF_TRUSTED_ORIGINS = [
+    "https://timepiece.uz",
+    "https://www.timepiece.uz",
+]
+
+CSRF_COOKIE_SECURE = True
+SESSION_COOKIE_SECURE = True
+
+CSRF_COOKIE_SAMESITE = "Lax"
+SESSION_COOKIE_SAMESITE = "Lax"
