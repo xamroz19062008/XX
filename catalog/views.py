@@ -6,12 +6,14 @@ from html import escape
 
 from django import forms
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
@@ -113,6 +115,12 @@ def watches_all(request):
 
 @require_POST
 def cart_add(request, watch_id):
+    # ✅ НЕЛЬЗЯ покупать без входа
+    if not request.user.is_authenticated:
+        messages.warning(request, "Сначала войдите или зарегистрируйтесь, чтобы купить товар.")
+        # вернём пользователя обратно на страницу, откуда он нажал "Купить"
+        return redirect(f"{reverse('login')}?next={request.META.get('HTTP_REFERER', '/catalog/')}")
+
     cart = Cart(request)
     quantity = int(request.POST.get("quantity", 1))
     update = request.POST.get("update") == "1"
@@ -225,7 +233,6 @@ def send_telegram_order_notification(order: Order):
         f"\nВыберите действие:"
     )
 
-    # ✅ ВАЖНО: для нового заказа должны быть accept/cancel
     keyboard = build_keyboard(order)
 
     tg_api(
@@ -244,6 +251,7 @@ def send_telegram_order_notification(order: Order):
 # Оформление заказа
 # =========================
 
+@login_required(login_url="login")
 def checkout(request):
     cart = Cart(request)
 
@@ -289,9 +297,9 @@ def checkout(request):
                 status=200,
             )
 
-        # ✅ ВАЖНО: статус должен быть new (а не waiting)
+        # ✅ здесь пользователь всегда авторизован (login_required)
         order = Order.objects.create(
-            user=request.user if request.user.is_authenticated else None,
+            user=request.user,
             location=location,
             phone=phone,
             latitude=lat,
@@ -300,7 +308,7 @@ def checkout(request):
         )
 
         # обновляем профиль
-        if request.user.is_authenticated and hasattr(request.user, "profile"):
+        if hasattr(request.user, "profile"):
             profile = request.user.profile
             profile.location = location
             profile.phone = phone
@@ -316,7 +324,6 @@ def checkout(request):
 
         cart.clear()
 
-        # отправляем в Telegram
         send_telegram_order_notification(order)
 
         return redirect("account")
@@ -358,11 +365,9 @@ def telegram_webhook(request):
     if not order:
         return JsonResponse({"ok": True})
 
-    # защита от повторных кликов на финальных статусах
     if order.status in ("cancelled", "delivered"):
         return JsonResponse({"ok": True})
 
-    # ===== МАШИНА СОСТОЯНИЙ =====
     if action == "cancel" and order.status == "new":
         order.status = "cancelled"
         status_text = "❌ <b>Статус:</b> Отменён"
@@ -384,28 +389,23 @@ def telegram_webhook(request):
 
     order.save()
 
-    # ✅ Уведомление пользователю (если есть telegram_id)
-    # Не ломает проект, даже если telegram_id нет
     if order.user and hasattr(order.user, "telegram_id") and order.user.telegram_id:
         tg_api("sendMessage", {
             "chat_id": order.user.telegram_id,
             "text": f"Статус вашего заказа №{order.id}: {order.get_status_display()}",
         })
 
-    # ===== ТОВАРЫ =====
     items = order.items.select_related("watch").all()
     items_text = "\n".join(
         f"{i+1}) <b>{escape(item.watch.name)}</b> × {item.quantity} — {item.total_price} сум"
         for i, item in enumerate(items)
     )
 
-    # ===== YANDEX MAPS =====
     map_line = ""
     if order.latitude is not None and order.longitude is not None:
         map_url = f"https://yandex.com/maps/?pt={order.longitude},{order.latitude}&z=16&l=map"
         map_line = f"\n<b>Карта:</b> <a href=\"{map_url}\">Открыть в Яндекс Картах</a>"
 
-    # ===== ТЕКСТ СООБЩЕНИЯ =====
     new_text = (
         f"<b>🕒 Заказ #{order.id}</b>\n\n"
         f"<b>Телефон:</b> {escape(order.phone)}\n"
@@ -416,7 +416,6 @@ def telegram_webhook(request):
         f"{status_text}"
     )
 
-    # ✅ Динамические кнопки (new → accepted → in_progress → delivered/cancelled)
     keyboard = build_keyboard(order)
 
     tg_api("editMessageText", {

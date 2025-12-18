@@ -131,3 +131,5 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Telegram
 TELEGRAM_BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.environ.get("TELEGRAM_CHAT_ID")
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "/account/"
