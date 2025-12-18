@@ -58,12 +58,25 @@
                   <th></th>
                 </tr>
               </thead>
+
               <tbody>
                 {% for item in cart %}
-                <tr>
-                  <td>{{ item.watch.name }}</td>
-                  <td>{{ item.price }} {{ item.watch.currency }}</td>
-                  <td>
+                <tr class="cart-row">
+                  <td class="cart-col cart-col--model">
+                    <span class="cart-label">Модель</span>
+                    <span class="cart-value">{{ item.watch.name }}</span>
+                  </td>
+
+                  <td class="cart-col cart-col--price">
+                    <span class="cart-label">Цена</span>
+                    <span class="cart-value"
+                      >{{ item.price }} {{ item.watch.currency }}</span
+                    >
+                  </td>
+
+                  <td class="cart-col cart-col--qty">
+                    <span class="cart-label">Количество</span>
+
                     <form
                       method="post"
                       action="{% url 'cart_add' item.watch.id %}"
@@ -74,6 +87,7 @@
                         <button type="button" class="qty-btn" data-dir="-">
                           −
                         </button>
+
                         <input
                           type="number"
                           name="quantity"
@@ -81,6 +95,7 @@
                           min="1"
                           class="qty-input"
                         />
+
                         <button type="button" class="qty-btn" data-dir="+">
                           +
                         </button>
@@ -88,8 +103,15 @@
                       <input type="hidden" name="update" value="1" />
                     </form>
                   </td>
-                  <td>{{ item.total_price }} {{ item.watch.currency }}</td>
-                  <td>
+
+                  <td class="cart-col cart-col--total">
+                    <span class="cart-label">Итого</span>
+                    <span class="cart-value"
+                      >{{ item.total_price }} {{ item.watch.currency }}</span
+                    >
+                  </td>
+
+                  <td class="cart-col cart-col--remove">
                     <a href="{% url 'cart_remove' item.watch.id %}" class="link"
                       >Удалить</a
                     >
@@ -99,7 +121,7 @@
               </tbody>
             </table>
 
-            <div class="cart-total mono" style="margin-top: 16px">
+            <div class="cart-total mono">
               Сумма заказа: {{ cart.get_total_price }} UZS
             </div>
           </div>

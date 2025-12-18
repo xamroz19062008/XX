@@ -1163,3 +1163,81 @@ img {
     padding: 18px;
   }
 }
+/* ===== CART: mobile no horizontal scroll ===== */
+
+.cart-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.cart-row td {
+  vertical-align: middle;
+}
+
+.cart-label {
+  display: none;
+  opacity: 0.7;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.cart-value {
+  display: inline-block;
+}
+
+.cart-total {
+  margin-top: 16px;
+}
+
+/* На телефоне превращаем таблицу в карточки */
+@media (max-width: 640px) {
+  .cart-table thead {
+    display: none;
+  }
+
+  .cart-table,
+  .cart-table tbody,
+  .cart-table tr,
+  .cart-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .cart-row {
+    padding: 14px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .cart-col {
+    padding: 0;
+    margin: 0 0 10px 0;
+  }
+
+  .cart-label {
+    display: block;
+  }
+
+  .cart-col--model .cart-value {
+    font-size: 18px;
+    font-weight: 600;
+    word-break: break-word;
+  }
+
+  .cart-col--remove {
+    margin-top: 6px;
+  }
+
+  .qty-control {
+    width: 100%;
+    display: flex;
+    justify-content: flex-start;
+    gap: 10px;
+  }
+
+  .qty-input {
+    width: 90px;
+  }
+}
