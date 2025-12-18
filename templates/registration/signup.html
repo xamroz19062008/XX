@@ -3,33 +3,50 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Регистрация — TIMEPIECE</title>
     <link rel="stylesheet" href="{% static 'style.css' %}" />
   </head>
+
   <body>
     <header class="header glass-panel">
       <div class="container header-inner">
         <a href="/" class="logo">TIMEPIECE</a>
-        <nav class="nav">
+
+        <!-- Кнопка меню для телефона -->
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-label="Открыть меню"
+          aria-expanded="false"
+        >
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+        </button>
+
+        <nav class="nav" id="site-nav">
           <a href="/catalog/">Каталог</a>
           <a href="/cart/">Корзина</a>
         </nav>
       </div>
     </header>
 
-    <main class="section">
+    <main class="section auth-page">
       <div class="container">
-        <div
-          class="glass-panel"
-          style="padding: 32px; max-width: 520px; margin: 0 auto"
-        >
-          <h1 class="section-title" style="margin-bottom: 24px">Регистрация</h1>
+        <div class="auth-card glass-panel">
+          <h1 class="auth-title">Регистрация</h1>
 
           <form method="post" class="auth-form">
             {% csrf_token %}
 
+            <!-- Общие ошибки формы -->
+            {% if form.non_field_errors %}
+            <div class="form-error-global">{{ form.non_field_errors }}</div>
+            {% endif %}
+
             <!-- ЛОГИН -->
-            <div class="form-row" style="margin-bottom: 16px">
+            <div class="form-row">
               <label for="{{ form.username.id_for_label }}">Логин</label>
               {{ form.username }} {% if form.username.errors %}
               <div class="field-error">{{ form.username.errors }}</div>
@@ -37,7 +54,7 @@
             </div>
 
             <!-- ПАРОЛЬ -->
-            <div class="form-row" style="margin-bottom: 16px">
+            <div class="form-row">
               <label for="{{ form.password1.id_for_label }}">Пароль</label>
               {{ form.password1 }} {% if form.password1.errors %}
               <div class="field-error">{{ form.password1.errors }}</div>
@@ -45,7 +62,7 @@
             </div>
 
             <!-- ПОДТВЕРЖДЕНИЕ ПАРОЛЯ -->
-            <div class="form-row" style="margin-bottom: 16px">
+            <div class="form-row">
               <label for="{{ form.password2.id_for_label }}"
                 >Повторите пароль</label
               >
@@ -55,7 +72,7 @@
             </div>
 
             <!-- ТЕЛЕФОН (опционально) -->
-            <div class="form-row" style="margin-bottom: 24px">
+            <div class="form-row">
               <label for="{{ form.phone.id_for_label }}"
                 >Телефон (необязательно)</label
               >
@@ -64,26 +81,30 @@
               {% endif %}
             </div>
 
-            <!-- Общие ошибки формы -->
-            {% if form.non_field_errors %}
-            <div class="form-error-global">{{ form.non_field_errors }}</div>
-            {% endif %}
-
-            <button
-              class="btn btn-primary"
-              type="submit"
-              style="margin-top: 8px"
-            >
+            <button class="btn btn-primary auth-submit" type="submit">
               СОЗДАТЬ АККАУНТ
             </button>
           </form>
 
-          <p style="margin-top: 16px">
+          <p class="auth-footnote">
             Уже есть аккаунт?
             <a href="{% url 'login' %}">Войти</a>
           </p>
         </div>
       </div>
     </main>
+
+    <script>
+      (function () {
+        const btn = document.querySelector(".nav-toggle");
+        const nav = document.getElementById("site-nav");
+        if (!btn || !nav) return;
+
+        btn.addEventListener("click", function () {
+          const open = nav.classList.toggle("nav-open");
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      })();
+    </script>
   </body>
 </html>

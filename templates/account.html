@@ -3,24 +3,36 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Мой аккаунт — TIMEPIECE</title>
     <link rel="stylesheet" href="{% static 'style.css' %}" />
   </head>
+
   <body>
     <header class="header glass-panel">
       <div class="container header-inner">
         <a href="/" class="logo">TIMEPIECE</a>
 
-        <nav class="nav">
+        <!-- Бургер для телефона -->
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-label="Открыть меню"
+          aria-expanded="false"
+        >
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+        </button>
+
+        <nav class="nav" id="site-nav">
           <a href="/catalog/">Каталог</a>
           <a href="/cart/">Корзина</a>
         </nav>
 
-        <div class="auth-links">
+        <div class="auth-links desktop-only">
           {% if user.is_authenticated %}
-          <span class="mono" style="margin-right: 16px"
-            >{{ user.username }}</span
-          >
+          <span class="mono">{{ user.username }}</span>
           <a href="{% url 'logout' %}">Выйти</a>
           {% else %}
           <a href="{% url 'login' %}">Войти</a>
@@ -30,43 +42,57 @@
       </div>
     </header>
 
-    <main class="section">
+    <main class="section account-page">
       <div class="container">
-        <div class="glass-panel" style="padding: 32px">
+        <div class="account-card glass-panel">
           <h1 class="section-title">Мой аккаунт</h1>
 
-          <p><strong>Логин:</strong> {{ user.username }}</p>
-          <p><strong>Телефон:</strong> {{ user.profile.phone }}</p>
-          <p><strong>Локация:</strong> {{ user.profile.location }}</p>
+          <div class="account-info">
+            <div><strong>Логин:</strong> {{ user.username }}</div>
+            <div><strong>Телефон:</strong> {{ user.profile.phone }}</div>
+            <div><strong>Локация:</strong> {{ user.profile.location }}</div>
+          </div>
 
-          <h2 class="section-title" style="margin-top: 24px">Мои заказы</h2>
+          <h2 class="section-title section-subtitle">Мои заказы</h2>
 
           {% if orders %}
           <ul class="order-list">
             {% for order in orders %}
-            <li
-              class="order-item glass-panel"
-              style="margin: 12px 0; padding: 16px"
-            >
-              <p>
-                <strong>Заказ #{{ order.id }}</strong> —
-                <span class="order-status"
-                  >Статус: {{ order.get_status_display }}
+            <li class="order-item glass-panel">
+              <div class="order-row">
+                <strong>Заказ #{{ order.id }}</strong>
+                <span class="order-status">
+                  {{ order.get_status_display }}
                 </span>
-              </p>
+              </div>
 
-              <p>Создан: {{ order.created_at }}</p>
-              <p>Адрес: {{ order.location }}</p>
-              <p>Телефон: {{ order.phone }}</p>
-              <p>Сумма: {{ order.total_amount }} сум</p>
+              <div class="order-meta">
+                <div>Создан: {{ order.created_at }}</div>
+                <div>Адрес: {{ order.location }}</div>
+                <div>Телефон: {{ order.phone }}</div>
+                <div class="order-sum">Сумма: {{ order.total_amount }} сум</div>
+              </div>
             </li>
             {% endfor %}
           </ul>
           {% else %}
-          <p>У вас пока нет заказов.</p>
+          <p class="empty-note">У вас пока нет заказов.</p>
           {% endif %}
         </div>
       </div>
     </main>
+
+    <script>
+      (function () {
+        const btn = document.querySelector(".nav-toggle");
+        const nav = document.getElementById("site-nav");
+        if (!btn || !nav) return;
+
+        btn.addEventListener("click", function () {
+          const open = nav.classList.toggle("nav-open");
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      })();
+    </script>
   </body>
 </html>

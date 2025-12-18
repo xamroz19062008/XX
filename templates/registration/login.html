@@ -3,40 +3,67 @@
 <html lang="ru">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Войти — TIMEPIECE</title>
     <link rel="stylesheet" href="{% static 'style.css' %}" />
   </head>
+
   <body>
     <header class="header glass-panel">
       <div class="container header-inner">
         <a href="/" class="logo">TIMEPIECE</a>
-        <nav class="nav">
+
+        <!-- Кнопка меню для телефона -->
+        <button
+          class="nav-toggle"
+          type="button"
+          aria-label="Открыть меню"
+          aria-expanded="false"
+        >
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+        </button>
+
+        <nav class="nav" id="site-nav">
           <a href="/catalog/">Каталог</a>
           <a href="/cart/">Корзина</a>
         </nav>
       </div>
     </header>
 
-    <main class="section">
+    <main class="section auth-page">
       <div class="container">
-        <div
-          class="glass-panel"
-          style="padding: 32px; max-width: 480px; margin: 0 auto"
-        >
-          <h1 class="section-title">Войти</h1>
+        <div class="auth-card glass-panel">
+          <h1 class="auth-title">Войти</h1>
 
-          <form method="post">
+          <form method="post" class="auth-form">
             {% csrf_token %} {{ form.as_p }}
 
-            <button class="btn btn-primary" type="submit">Войти</button>
+            <button class="btn btn-primary auth-submit" type="submit">
+              Войти
+            </button>
           </form>
 
-          <p style="margin-top: 12px">
+          <p class="auth-footnote">
             Нет аккаунта?
             <a href="{% url 'signup' %}">Зарегистрироваться</a>
           </p>
         </div>
       </div>
     </main>
+
+    <script>
+      (function () {
+        const btn = document.querySelector(".nav-toggle");
+        const nav = document.getElementById("site-nav");
+        if (!btn || !nav) return;
+
+        btn.addEventListener("click", function () {
+          const open = nav.classList.toggle("nav-open");
+          btn.setAttribute("aria-expanded", open ? "true" : "false");
+        });
+      })();
+    </script>
   </body>
 </html>
