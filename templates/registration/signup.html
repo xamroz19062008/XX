@@ -13,7 +13,6 @@
       <div class="container header-inner">
         <a href="/" class="logo">TIMEPIECE</a>
 
-        <!-- Кнопка меню для телефона -->
         <button
           class="nav-toggle"
           type="button"
@@ -37,15 +36,23 @@
         <div class="auth-card glass-panel">
           <h1 class="auth-title">Регистрация</h1>
 
-          <form method="post" class="auth-form">
-            {% csrf_token %}
+          {% if "Telegram" in request.META.HTTP_USER_AGENT %}
+          <p style="margin: 12px 0; font-size: 12px; opacity: 0.85">
+            Если регистрация не проходит — откройте в браузере:
+            <a
+              href="https://www.timepiece.uz{{ request.get_full_path }}"
+              style="text-decoration: underline"
+            >
+              открыть
+            </a>
+          </p>
+          {% endif %}
 
-            <!-- Общие ошибки формы -->
-            {% if form.non_field_errors %}
+          <form method="post" class="auth-form">
+            {% csrf_token %} {% if form.non_field_errors %}
             <div class="form-error-global">{{ form.non_field_errors }}</div>
             {% endif %}
 
-            <!-- ЛОГИН -->
             <div class="form-row">
               <label for="{{ form.username.id_for_label }}">Логин</label>
               {{ form.username }} {% if form.username.errors %}
@@ -53,7 +60,6 @@
               {% endif %}
             </div>
 
-            <!-- ПАРОЛЬ -->
             <div class="form-row">
               <label for="{{ form.password1.id_for_label }}">Пароль</label>
               {{ form.password1 }} {% if form.password1.errors %}
@@ -61,7 +67,6 @@
               {% endif %}
             </div>
 
-            <!-- ПОДТВЕРЖДЕНИЕ ПАРОЛЯ -->
             <div class="form-row">
               <label for="{{ form.password2.id_for_label }}"
                 >Повторите пароль</label
@@ -71,7 +76,6 @@
               {% endif %}
             </div>
 
-            <!-- ТЕЛЕФОН (опционально) -->
             <div class="form-row">
               <label for="{{ form.phone.id_for_label }}"
                 >Телефон (необязательно)</label
