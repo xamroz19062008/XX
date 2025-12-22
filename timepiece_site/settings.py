@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY
 SECRET_KEY = os.environ.get("SECRET_KEY", "unsafe-secret")
-DEBUG = False
+DEBUG = True
 
 # Для старта на Render проще так. Позже можно ужесточить до вашего домена.
 ALLOWED_HOSTS = ["*"]
