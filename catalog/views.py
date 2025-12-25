@@ -16,7 +16,8 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-
+from django.shortcuts import render
+from django.views.decorators.csrf import ensure_csrf_cookie
 from .cart import Cart
 from .models import Watch, Order, OrderItem
 
@@ -457,3 +458,10 @@ def account(request):
 def logout_view(request):
     logout(request)
     return redirect("index")
+@ensure_csrf_cookie
+def index(request):
+    return render(request, "index.html")
+
+@ensure_csrf_cookie
+def catalog_page(request):
+    return render(request, "catalog.html")

@@ -21,6 +21,9 @@ ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.onrender.com",
+    "https://timepiece.uz",
+    "https://www.timepiece.uz",
+
 ]
 
 # Render работает за reverse proxy (HTTPS снаружи, HTTP внутри).
