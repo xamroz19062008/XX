@@ -211,10 +211,6 @@ def build_keyboard(order):
 # =========================
 
 def send_telegram_order_notification(order: Order):
-    """
-    ✅ Требование:
-    1) В Telegram должен приходить СКРИНШОТ (фото), а не только текст.
-    """
     chat_id = getattr(settings, "TELEGRAM_CHAT_ID", None)
     bot_token = getattr(settings, "TELEGRAM_BOT_TOKEN", None)
     if not bot_token or not chat_id:
@@ -231,53 +227,74 @@ def send_telegram_order_notification(order: Order):
         map_url = f"https://yandex.com/maps/?pt={order.longitude},{order.latitude}&z=16&l=map"
         map_line = f"\n<b>Карта:</b> <a href=\"{map_url}\">Открыть в Яндекс Картах</a>"
 
-    caption = (
-        f"<b>💳 Чек оплаты по заказу #{order.id}</b>\n\n"
+    status_text = f"<b>Статус:</b> {escape(order.get_status_display())}"
+
+    full_text = (
+        f"<b>🧾 Чек оплаты по заказу #{order.id}</b>\n\n"
         f"<b>Телефон:</b> {escape(order.phone)}\n"
         f"<b>Адрес:</b> {escape(order.location)}"
         f"{map_line}\n\n"
         f"<b>Товары:</b>\n{items_block}\n\n"
         f"<b>Сумма:</b> {order.total_amount} сум\n\n"
-        f"<b>Статус:</b> {escape(order.get_status_display())}\n\n"
+        f"{status_text}\n\n"
         f"Выберите действие:"
     )
 
     keyboard = build_keyboard(order)
 
-    # ✅ Если есть чек — отправляем фото
-    if getattr(order, "payment_screenshot", None):
+    # ✅ Если есть скрин — отправляем фото
+    if order.payment_screenshot and hasattr(order.payment_screenshot, "url"):
         try:
-            photo_url = order.payment_screenshot.url  # /media/payments/...
-        except Exception:
-            photo_url = None
+            # делаем абсолютную ссылку на картинку
+            photo_url = f"https://www.timepiece.uz{order.payment_screenshot.url}"
 
-        if photo_url:
-            # Для Telegram нужен абсолютный URL. Берём домен из settings (если есть) или из request нельзя.
-            # ✅ Самый простой вариант для Render: хранить BASE_URL в env (например https://timepiece.uz)
-            base_url = getattr(settings, "SITE_BASE_URL", "").rstrip("/")
-            if base_url:
-                photo = f"{base_url}{photo_url}"
-            else:
-                # fallback: отправим как текст, если нет SITE_BASE_URL
-                photo = None
+            # caption в Telegram ограничен ~1024 символами, поэтому кладём туда коротко
+            caption = (
+                f"<b>🧾 Чек оплаты #{order.id}</b>\n"
+                f"<b>Сумма:</b> {order.total_amount} сум\n"
+                f"<b>Тел:</b> {escape(order.phone)}\n"
+                f"<b>Адрес:</b> {escape(order.location)}\n"
+                f"<b>Статус:</b> {escape(order.get_status_display())}"
+            )
 
-            if photo:
-                return tg_api("sendPhoto", {
+            tg_api(
+                "sendPhoto",
+                {
                     "chat_id": chat_id,
-                    "photo": photo,
+                    "photo": photo_url,  # важно: публичный URL
                     "caption": caption,
                     "parse_mode": "HTML",
                     "reply_markup": json.dumps(keyboard),
-                })
+                },
+            )
 
-    # ✅ fallback: текстом (если фото не получилось)
-    tg_api("sendMessage", {
-        "chat_id": chat_id,
-        "text": caption,
-        "parse_mode": "HTML",
-        "disable_web_page_preview": True,
-        "reply_markup": json.dumps(keyboard),
-    })
+            # Дополнительно (по желанию) можно отдельно отправить полный текст списком товаров:
+            tg_api(
+                "sendMessage",
+                {
+                    "chat_id": chat_id,
+                    "text": full_text,
+                    "parse_mode": "HTML",
+                    "disable_web_page_preview": True,
+                },
+            )
+            return
+
+        except Exception as e:
+            print("❌ sendPhoto failed:", e)
+            # упадём в sendMessage ниже
+
+    # ✅ Если скрина нет — просто текст
+    tg_api(
+        "sendMessage",
+        {
+            "chat_id": chat_id,
+            "text": full_text,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+            "reply_markup": json.dumps(keyboard),
+        },
+    )
 
 
 # =========================
