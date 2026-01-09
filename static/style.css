@@ -1290,8 +1290,8 @@ img {
   width: 100%;
   padding: 10px 12px;
   border-radius: 12px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(0,0,0,0.35);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.35);
   color: #fff;
   outline: none;
 }
@@ -1340,5 +1340,130 @@ img {
   .checkout-input--wide,
   .checkout-input--narrow {
     max-width: 100%;
+  }
+}
+/* =====================================================
+   UI PATCH — mobile polish (SAFE)
+   НИЧЕГО НЕ ЛОМАЕТ, ТОЛЬКО УЛУЧШАЕТ
+   ===================================================== */
+
+/* ---------- MOBILE HEADER ---------- */
+@media (max-width: 640px) {
+  .header {
+    backdrop-filter: blur(20px);
+  }
+
+  .header-inner {
+    padding: 10px 0;
+  }
+
+  .logo {
+    font-size: 18px;
+    letter-spacing: 0.14em;
+  }
+
+  /* если есть бургер — показываем */
+  .nav-toggle {
+    display: inline-flex;
+  }
+
+  /* меню по умолчанию скрыто */
+  .nav {
+    display: none;
+    position: absolute;
+    top: 64px;
+    left: 14px;
+    right: 14px;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    z-index: 100;
+  }
+
+  /* открытое меню */
+  .nav.nav-open {
+    display: flex;
+  }
+
+  .nav a {
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    text-align: center;
+  }
+}
+
+/* ---------- MOBILE HERO ---------- */
+@media (max-width: 640px) {
+  .hero {
+    min-height: auto;
+    padding: 56px 0 40px;
+  }
+
+  .hero-inner {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+
+  .hero-title {
+    font-size: 38px;
+    line-height: 1.05;
+  }
+
+  .hero-text {
+    font-size: 14px;
+    line-height: 1.65;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .hero-actions .btn {
+    width: 100%;
+  }
+
+  .hero-visual {
+    justify-content: center;
+  }
+}
+
+/* ---------- MOBILE WATCH CARD ---------- */
+@media (max-width: 640px) {
+  .watch-card {
+    max-width: 100%;
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .watch-name {
+    font-size: 20px;
+  }
+
+  .watch-desc {
+    font-size: 13px;
+  }
+}
+
+/* ---------- MOBILE PRODUCT CARDS ---------- */
+@media (max-width: 640px) {
+  .product-card {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .product-image {
+    height: 200px;
+  }
+
+  .product-name {
+    font-size: 18px;
+  }
+
+  .product-actions .btn {
+    width: 100%;
   }
 }

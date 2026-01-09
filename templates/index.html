@@ -1,5 +1,4 @@
 {% load static %}
-
 <!DOCTYPE html>
 <html lang="ru">
   <head>
@@ -7,10 +6,8 @@
     <title>TIMEPIECE — премиальные часы в Ташкенте</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Подключаем стили -->
     <link rel="stylesheet" href="{% static 'style.css' %}" />
 
-    <!-- Шрифты как в дизайне: Playfair Display + Manrope + JetBrains Mono -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,27 +15,36 @@
       rel="stylesheet"
     />
   </head>
+
   <body>
     <form style="display: none">{% csrf_token %}</form>
+
     <header class="header glass-panel">
       <div class="container header-inner">
         <a href="#top" class="logo">TIMEPIECE</a>
 
-        <nav class="nav">
+        <!-- BURGER -->
+        <button class="nav-toggle" id="navToggle" aria-label="Меню">
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+          <span class="nav-toggle-line"></span>
+        </button>
+
+        <nav class="nav" id="navMenu">
           <a href="#collection">Коллекция</a>
           <a href="#about">О нас</a>
           <a href="#service">Сервис</a>
           <a href="#contacts">Контакты</a>
         </nav>
 
-        <div class="header-right">
-          <a href="#collection" class="btn btn-outline btn-small">
-            Перейти к часам
-          </a>
+        <div class="header-right desktop-only">
+          <a href="#collection" class="btn btn-outline btn-small"
+            >Перейти к часам</a
+          >
 
           <div class="auth-area">
             {% if user.is_authenticated %}
-            <!-- здесь твой дропдаун "Аккаунт" -->
+            <!-- аккаунт -->
             {% else %}
             <div class="auth-links">
               <a href="{% url 'login' %}" class="auth-link">Войти</a>
@@ -58,42 +64,34 @@
         <div class="container hero-inner">
           <div class="hero-content">
             <p class="hero-label mono">НОВАЯ КОЛЛЕКЦИЯ · 2025</p>
-            <h1 class="hero-title">
-              Время<br />
-              под контролем
-            </h1>
+            <h1 class="hero-title">Время<br />под контролем</h1>
+
             <p class="hero-text">
               TIMEPIECE — небольшая студия часов в Ташкенте. Я заказываю модели
-              у проверенных поставщиков в Китае и привожу их в город небольшими
-              партиями, отбирая только те варианты, которые выглядят достойно на
-              руке.
+              у проверенных поставщиков в Китае и привожу их небольшими
+              партиями.
             </p>
 
             <p class="hero-text">
-              Если в каталоге нет того, что вы ищете, можно сделать
-              <strong>под заказ по фото</strong> — пришлёте пример в Telegram
-              @xamroz, и я постараюсь найти максимально похожую модель у
-              поставщиков в Китае.
+              Можно сделать <strong>под заказ по фото</strong> — Telegram
+              @xamroz
             </p>
 
             <div class="hero-actions">
-              <a href="#collection" class="btn btn-primary">
-                Смотреть коллекцию
-              </a>
-              <a href="#about" class="btn btn-ghost">Подробнее о магазине</a>
+              <a href="#collection" class="btn btn-primary"
+                >Смотреть коллекцию</a
+              >
+              <a href="#about" class="btn btn-ghost">Подробнее</a>
             </div>
 
             <div class="hero-meta">
               <div class="hero-meta-item">
                 <span class="hero-meta-label mono">Доставка</span>
-                <span class="hero-meta-value">по Ташкенту через Яндекс</span>
+                <span class="hero-meta-value">Яндекс · Ташкент</span>
               </div>
-
               <div class="hero-meta-item">
                 <span class="hero-meta-label mono">Под заказ</span>
-                <span class="hero-meta-value">
-                  если нет нужной модели — сделаем под заказ
-                </span>
+                <span class="hero-meta-value">по фото</span>
               </div>
             </div>
           </div>
@@ -110,15 +108,13 @@
               </div>
               <div class="watch-info">
                 <p class="watch-ref mono" id="hero-watch-ref"></p>
-                <h2 class="watch-name" id="hero-watch-name">TIMEPIECE NOIR</h2>
-                <p class="watch-desc" id="hero-watch-desc">
-                  Подборка самых актуальных моделей из текущей поставки.
-                </p>
+                <h2 class="watch-name" id="hero-watch-name"></h2>
+                <p class="watch-desc" id="hero-watch-desc"></p>
                 <div class="watch-bottom">
-                  <span class="price" id="hero-watch-price">сум 0</span>
-                  <a href="#collection" class="btn btn-outline btn-small">
-                    Подробнее
-                  </a>
+                  <span class="price" id="hero-watch-price"></span>
+                  <a href="#collection" class="btn btn-outline btn-small"
+                    >Подробнее</a
+                  >
                 </div>
               </div>
             </div>
@@ -126,150 +122,108 @@
         </div>
       </section>
 
-      <!-- FEATURES / ПРЕИМУЩЕСТВА -->
+      <!-- FEATURES -->
       <section class="section features" id="service">
         <div class="container">
           <h2 class="section-title">Как я работаю</h2>
           <p class="section-subtitle">
-            Это не классический интернет-магазин, а аккуратная подборка моделей,
-            которые я сам заказываю, проверяю и привожу в Ташкент. Можно купить
-            готовые часы из наличия или заказать что-то под себя.
+            Аккуратная подборка, живой контакт и честный подход.
           </p>
 
           <div class="features-grid">
             <div class="feature-item glass-panel">
-              <h3>Поставки из Китая</h3>
-              <p>
-                Заказываю часы у проверенных продавцов и фабрик в Китае. Перед
-                тем как выставить модель в каталог, смотрю качество корпуса,
-                ремешка и хода.
-              </p>
+              <h3>Китай</h3>
+              <p>Проверенные фабрики</p>
             </div>
             <div class="feature-item glass-panel">
-              <h3>Цены в сумах</h3>
-              <p>
-                Все цены указаны в сумах — удобно ориентироваться по бюджету.
-                Можно подобрать модель в нужном диапазоне и обсудить варианты
-                прямо в Telegram.
-              </p>
+              <h3>Сумы</h3>
+              <p>Без пересчётов</p>
             </div>
             <div class="feature-item glass-panel">
-              <h3>Под заказ по фото</h3>
-              <p>
-                Если не нашли подходящие часы в каталоге — пришлите фото или
-                ссылку на пример в Telegram @xamroz. Попробую найти похожую
-                модель у поставщиков в Китае.
-              </p>
+              <h3>По фото</h3>
+              <p>Индивидуально</p>
             </div>
             <div class="feature-item glass-panel">
-              <h3>Доставка по Ташкенту</h3>
-              <p>
-                Доставляю часы по Ташкенту через Яндекс. Можно договориться о
-                времени, месте встречи и способе передачи, чтобы было
-                максимально удобно.
-              </p>
+              <h3>Доставка</h3>
+              <p>Яндекс</p>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- COLLECTION / КАТАЛОГ -->
+      <!-- COLLECTION -->
       <section class="section collection" id="collection">
         <div class="container">
           <div class="section-header">
             <div>
               <h2 class="section-title">Избранные модели</h2>
-              <p class="section-subtitle">
-                Несколько часов, которые лучше всего передают стиль и качество
-                текущей коллекции. Остальное можно посмотреть в полном каталоге
-                или заказать по фото.
-              </p>
+              <p class="section-subtitle">Часть текущей коллекции</p>
             </div>
-            <!-- Кнопка для показа полного каталога -->
-            <a href="/catalog/" class="btn btn-ghost btn-small">
-              Полный каталог
-            </a>
+            <a href="/catalog/" class="btn btn-ghost btn-small"
+              >Полный каталог</a
+            >
           </div>
 
-          <!-- Пустой контейнер, карточки будут подставляться через JS -->
           <div class="collection-grid" id="collection-grid"></div>
         </div>
       </section>
 
-      <!-- ABOUT / О МАГАЗИНЕ -->
+      <!-- ABOUT -->
       <section class="section about" id="about">
         <div class="container about-inner glass-panel">
           <div class="about-text">
             <p class="mono about-label">О МАГАЗИНЕ</p>
-            <h2 class="section-title">Часы под твой вкус и бюджет</h2>
+            <h2 class="section-title">Часы под твой вкус</h2>
             <p class="about-body">
-              Я сам подбираю и заказываю часы из Китая, чтобы в Ташкенте была
-              возможность купить интересные модели без долгой международной
-              доставки. Никакого массового ширпотреба — только то, что реально
-              приятно носить.
-            </p>
-            <p class="about-body">
-              Можно выбрать готовые варианты из каталога или прислать пример
-              модели, которая нравится. Я подберу максимально похожий вариант у
-              поставщиков и скажу цену в сумах до заказа.
+              Подбираю и привожу часы, которые реально приятно носить.
             </p>
           </div>
+
           <div class="about-meta">
             <div class="about-stat">
               <span class="about-stat-value">Ташкент</span>
-              <span class="about-stat-label">
-                личная встреча или доставка через Яндекс
-              </span>
+              <span class="about-stat-label">лично или доставка</span>
             </div>
             <div class="about-stat">
               <span class="about-stat-value">Под заказ</span>
-              <span class="about-stat-label">
-                работаю с примерами и фото из Telegram
-              </span>
+              <span class="about-stat-label">по фото</span>
             </div>
             <div class="about-stat">
               <span class="about-stat-value">Сумы</span>
-              <span class="about-stat-label">
-                прозрачные цены без пересчётов
-              </span>
+              <span class="about-stat-label">честные цены</span>
             </div>
           </div>
         </div>
       </section>
     </main>
 
-    <!-- FOOTER / КОНТАКТЫ -->
     <footer class="footer" id="contacts">
       <div class="container footer-inner">
-        <div class="footer-left">
+        <div>
           <div class="logo footer-logo">TIMEPIECE</div>
-          <p class="footer-text">
-            Часы из Китая, привезённые в Ташкент. Можно купить готовую модель из
-            наличия или оформить индивидуальный заказ по фото.
-          </p>
+          <p class="footer-text">Часы из Китая в Ташкенте</p>
         </div>
+
         <div class="footer-right">
           <div class="footer-block">
-            <h4>Связаться</h4>
+            <h4>Связь</h4>
             <p>Telegram: @xamroz</p>
-            <p>Телефон: +998&nbsp;94&nbsp;662&nbsp;83&nbsp;08</p>
-          </div>
-          <div class="footer-block">
-            <h4>Город</h4>
-            <p>Ташкент, Узбекистан</p>
-            <p>Доставка через Яндекс по городу</p>
-          </div>
-          <div class="footer-block">
-            <h4>Дополнительно</h4>
-            <p>Подбор часов по фото</p>
-            <p>Консультация по выбору модели</p>
+            <p>+998 94 662 83 08</p>
           </div>
         </div>
       </div>
-      <div class="footer-bottom mono">
-        © TIMEPIECE, 2025 · Все права защищены.
-      </div>
+
+      <div class="footer-bottom mono">© TIMEPIECE, 2025</div>
     </footer>
+
+    <!-- BURGER JS -->
+    <script>
+      document
+        .getElementById("navToggle")
+        .addEventListener("click", function () {
+          document.getElementById("navMenu").classList.toggle("nav-open");
+        });
+    </script>
 
     <!-- JS: выпадающее меню аккаунта -->
     <script>
