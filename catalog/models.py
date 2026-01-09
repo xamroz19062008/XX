@@ -4,6 +4,9 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 
+# =========================
+# WATCH
+# =========================
 class Watch(models.Model):
     name = models.CharField("Название", max_length=255)
 
@@ -42,22 +45,9 @@ class Watch(models.Model):
         null=True,
     )
 
-    is_active = models.BooleanField(
-        "Показывать на сайте",
-        default=True,
-    )
-
-    is_hero = models.BooleanField(
-        "Показывать в hero-блоке",
-        default=False,
-        help_text="Эта модель будет отображаться в большом блоке наверху сайта",
-    )
-
-    is_featured = models.BooleanField(
-        "Показывать в подборке",
-        default=False,
-        help_text="Эта модель будет попадать в Featured Timepieces",
-    )
+    is_active = models.BooleanField("Показывать на сайте", default=True)
+    is_hero = models.BooleanField("Показывать в hero-блоке", default=False)
+    is_featured = models.BooleanField("Показывать в подборке", default=False)
 
     sort_order = models.PositiveIntegerField(
         "Порядок сортировки",
@@ -74,6 +64,9 @@ class Watch(models.Model):
         return self.name
 
 
+# =========================
+# USER PROFILE
+# =========================
 class UserProfile(models.Model):
     user = models.OneToOneField(
         User,
@@ -89,31 +82,24 @@ class UserProfile(models.Model):
 
 @receiver(post_save, sender=User)
 def create_profile(sender, instance, created, **kwargs):
-    """
-    Автоматически создаёт профиль при создании пользователя.
-    """
     if created:
         UserProfile.objects.create(user=instance)
 
 
 @receiver(post_save, sender=User)
 def save_profile(sender, instance, **kwargs):
-    """
-    Автоматически сохраняет профиль при сохранении пользователя.
-    """
-    # На случай, если профиль не был создан по какой-то причине:
     if hasattr(instance, "profile"):
         instance.profile.save()
-    else:
-        UserProfile.objects.create(user=instance)
 
 
-from django.db import models
-from django.contrib.auth.models import User
+# =========================
+# ORDER
+# =========================
 class Order(models.Model):
     STATUS_CHOICES = [
-        ("new", "Новый"),
-        ("accepted", "Принят"),
+        ("awaiting_payment", "Ожидает оплаты"),
+        ("new", "Оплачен (на проверке)"),
+        ("accepted", "Оплата подтверждена"),
         ("in_progress", "В пути"),
         ("delivered", "Доставлен"),
         ("cancelled", "Отменён"),
@@ -127,37 +113,32 @@ class Order(models.Model):
         verbose_name="Пользователь",
     )
 
-    created_at = models.DateTimeField(
-        "Создан",
-        auto_now_add=True,
-    )
+    created_at = models.DateTimeField("Создан", auto_now_add=True)
 
-    # Адрес и координаты
-    location = models.CharField(
-        "Локация (адрес текстом)",
-        max_length=255,
-    )
-    latitude = models.FloatField(
-        "Широта",
-        null=True,
-        blank=True,
-    )
-    longitude = models.FloatField(
-        "Долгота",
-        null=True,
-        blank=True,
-    )
+    location = models.CharField("Локация (адрес текстом)", max_length=255)
+    latitude = models.FloatField("Широта", null=True, blank=True)
+    longitude = models.FloatField("Долгота", null=True, blank=True)
 
-    phone = models.CharField(
-        "Телефон",
-        max_length=32,
-    )
+    phone = models.CharField("Телефон", max_length=32)
 
     status = models.CharField(
         "Статус",
-        max_length=20,
+        max_length=30,
         choices=STATUS_CHOICES,
-        default="new",   # ✅ ИСПРАВЛЕНО
+        default="awaiting_payment",  # ✅ ИСПРАВЛЕНО
+    )
+
+    payment_screenshot = models.ImageField(
+        "Скриншот оплаты",
+        upload_to="payments/",
+        null=True,
+        blank=True,
+    )
+
+    admin_comment = models.TextField(
+        "Комментарий администратора",
+        blank=True,
+        help_text="Например: Оплата подтверждена / Не совпала сумма",
     )
 
     uzum_payment_id = models.CharField(
@@ -179,6 +160,9 @@ class Order(models.Model):
         return sum(item.total_price for item in self.items.all())
 
 
+# =========================
+# ORDER ITEM
+# =========================
 class OrderItem(models.Model):
     order = models.ForeignKey(
         Order,
@@ -207,7 +191,4 @@ class OrderItem(models.Model):
 
     @property
     def total_price(self):
-        """
-        Сумма по позиции.
-        """
         return self.price * self.quantity

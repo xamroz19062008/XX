@@ -14,10 +14,9 @@ from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.views.decorators.http import require_POST
-from django.shortcuts import render
-from django.views.decorators.csrf import ensure_csrf_cookie
+
 from .cart import Cart
 from .models import Watch, Order, OrderItem
 
@@ -61,10 +60,12 @@ def signup(request):
 # Страницы
 # =========================
 
+@ensure_csrf_cookie
 def index(request):
     return render(request, "index.html")
 
 
+@ensure_csrf_cookie
 def catalog_page(request):
     return render(request, "catalog.html")
 
@@ -118,9 +119,13 @@ def watches_all(request):
 def cart_add(request, watch_id):
     # ✅ НЕЛЬЗЯ покупать без входа
     if not request.user.is_authenticated:
-        messages.warning(request, "Сначала войдите или зарегистрируйтесь, чтобы купить товар.")
-        # вернём пользователя обратно на страницу, откуда он нажал "Купить"
-        return redirect(f"{reverse('login')}?next={request.META.get('HTTP_REFERER', '/catalog/')}")
+        messages.warning(
+            request,
+            "Сначала войдите или зарегистрируйтесь, чтобы купить товар."
+        )
+        return redirect(
+            f"{reverse('login')}?next={request.META.get('HTTP_REFERER', '/catalog/')}"
+        )
 
     cart = Cart(request)
     quantity = int(request.POST.get("quantity", 1))
@@ -175,11 +180,12 @@ def tg_api(method: str, payload: dict):
 
 
 def build_keyboard(order):
+    # ✅ Кнопки показываем только после загрузки чека (status == "new")
     if order.status == "new":
         return {
             "inline_keyboard": [[
-                {"text": "✔ Принять", "callback_data": f"accept:{order.id}"},
-                {"text": "✖ Отклонить", "callback_data": f"cancel:{order.id}"},
+                {"text": "✅ Подтвердить оплату", "callback_data": f"accept:{order.id}"},
+                {"text": "❌ Отклонить оплату", "callback_data": f"cancel:{order.id}"},
             ]]
         }
 
@@ -201,10 +207,14 @@ def build_keyboard(order):
 
 
 # =========================
-# Отправка заказа в Telegram
+# Отправка заказа в Telegram (С ФОТО ЧЕКА)
 # =========================
 
 def send_telegram_order_notification(order: Order):
+    """
+    ✅ Требование:
+    1) В Telegram должен приходить СКРИНШОТ (фото), а не только текст.
+    """
     chat_id = getattr(settings, "TELEGRAM_CHAT_ID", None)
     bot_token = getattr(settings, "TELEGRAM_BOT_TOKEN", None)
     if not bot_token or not chat_id:
@@ -216,36 +226,58 @@ def send_telegram_order_notification(order: Order):
         lines.append(f"{i}) {escape(item.watch.name)} × {item.quantity} — {item.total_price} сум")
     items_block = "\n".join(lines) if lines else "—"
 
-    coords_line = ""
     map_line = ""
     if order.latitude is not None and order.longitude is not None:
         map_url = f"https://yandex.com/maps/?pt={order.longitude},{order.latitude}&z=16&l=map"
-        coords_line = f"<b>Координаты:</b> {order.latitude}, {order.longitude}\n"
-        map_line = f"<b>Карта:</b> <a href=\"{map_url}\">Открыть в Яндекс Картах</a>\n"
+        map_line = f"\n<b>Карта:</b> <a href=\"{map_url}\">Открыть в Яндекс Картах</a>"
 
-    text = (
-        f"<b>🕒 Новый заказ #{order.id}</b>\n\n"
+    caption = (
+        f"<b>💳 Чек оплаты по заказу #{order.id}</b>\n\n"
         f"<b>Телефон:</b> {escape(order.phone)}\n"
-        f"<b>Адрес:</b> {escape(order.location)}\n"
-        f"{coords_line}"
-        f"{map_line}"
-        f"\n<b>Товары:</b>\n{items_block}\n"
-        f"\n<b>Сумма:</b> {order.total_amount} сум\n"
-        f"\nВыберите действие:"
+        f"<b>Адрес:</b> {escape(order.location)}"
+        f"{map_line}\n\n"
+        f"<b>Товары:</b>\n{items_block}\n\n"
+        f"<b>Сумма:</b> {order.total_amount} сум\n\n"
+        f"<b>Статус:</b> {escape(order.get_status_display())}\n\n"
+        f"Выберите действие:"
     )
 
     keyboard = build_keyboard(order)
 
-    tg_api(
-        "sendMessage",
-        {
-            "chat_id": chat_id,
-            "text": text,
-            "parse_mode": "HTML",
-            "disable_web_page_preview": True,
-            "reply_markup": json.dumps(keyboard),
-        },
-    )
+    # ✅ Если есть чек — отправляем фото
+    if getattr(order, "payment_screenshot", None):
+        try:
+            photo_url = order.payment_screenshot.url  # /media/payments/...
+        except Exception:
+            photo_url = None
+
+        if photo_url:
+            # Для Telegram нужен абсолютный URL. Берём домен из settings (если есть) или из request нельзя.
+            # ✅ Самый простой вариант для Render: хранить BASE_URL в env (например https://timepiece.uz)
+            base_url = getattr(settings, "SITE_BASE_URL", "").rstrip("/")
+            if base_url:
+                photo = f"{base_url}{photo_url}"
+            else:
+                # fallback: отправим как текст, если нет SITE_BASE_URL
+                photo = None
+
+            if photo:
+                return tg_api("sendPhoto", {
+                    "chat_id": chat_id,
+                    "photo": photo,
+                    "caption": caption,
+                    "parse_mode": "HTML",
+                    "reply_markup": json.dumps(keyboard),
+                })
+
+    # ✅ fallback: текстом (если фото не получилось)
+    tg_api("sendMessage", {
+        "chat_id": chat_id,
+        "text": caption,
+        "parse_mode": "HTML",
+        "disable_web_page_preview": True,
+        "reply_markup": json.dumps(keyboard),
+    })
 
 
 # =========================
@@ -254,82 +286,117 @@ def send_telegram_order_notification(order: Order):
 
 @login_required(login_url="login")
 def checkout(request):
+    """
+    ШАГ 1:
+    Создаём заказ со статусом "awaiting_payment" (Ожидает оплаты),
+    НЕ отправляем в Telegram.
+    """
     cart = Cart(request)
 
-    if request.method == "POST":
-        location = (request.POST.get("location") or "").strip()
-        phone = (request.POST.get("phone") or "").strip()
+    if request.method != "POST":
+        return redirect("cart_detail")
 
-        lat_raw = (request.POST.get("latitude") or "").strip()
-        lon_raw = (request.POST.get("longitude") or "").strip()
+    location = (request.POST.get("location") or "").strip()
+    phone = (request.POST.get("phone") or "").strip()
+    lat_raw = (request.POST.get("latitude") or "").strip()
+    lon_raw = (request.POST.get("longitude") or "").strip()
 
-        # координаты в float
-        try:
-            lat = float(lat_raw) if lat_raw else None
-            lon = float(lon_raw) if lon_raw else None
-        except ValueError:
-            lat = None
-            lon = None
+    # координаты в float
+    try:
+        lat = float(lat_raw) if lat_raw else None
+        lon = float(lon_raw) if lon_raw else None
+    except ValueError:
+        lat = None
+        lon = None
 
-        errors = {}
-        if not cart:
-            errors["cart"] = "Корзина пуста. Добавьте хотя бы одну модель."
-        if not location:
-            errors["location"] = "Укажите адрес доставки."
-        if not phone:
-            errors["phone"] = "Укажите номер телефона."
-        if lat is None or lon is None:
-            errors["map"] = "Выберите точку на карте."
+    errors = {}
+    if not cart:
+        errors["cart"] = "Корзина пуста"
+    if not location:
+        errors["location"] = "Укажите адрес"
+    if not phone:
+        errors["phone"] = "Укажите телефон"
+    if lat is None or lon is None:
+        errors["map"] = "Выберите точку на карте."
 
-        if errors:
-            return render(
-                request,
-                "cart.html",
-                {
-                    "cart": cart,
-                    "errors": errors,
-                    "form": {
-                        "location": location,
-                        "phone": phone,
-                        "latitude": lat_raw,
-                        "longitude": lon_raw,
-                    },
-                },
-                status=200,
-            )
-
-        # ✅ здесь пользователь всегда авторизован (login_required)
-        order = Order.objects.create(
-            user=request.user,
-            location=location,
-            phone=phone,
-            latitude=lat,
-            longitude=lon,
-            status="new",
+    if errors:
+        return render(
+            request,
+            "cart.html",
+            {"cart": cart, "errors": errors, "form": request.POST},
         )
 
-        # обновляем профиль
-        if hasattr(request.user, "profile"):
-            profile = request.user.profile
-            profile.location = location
-            profile.phone = phone
-            profile.save()
+    # ✅ ВАЖНО: заказ создаём как "Ожидает оплаты"
+    order = Order.objects.create(
+        user=request.user,
+        location=location,
+        phone=phone,
+        latitude=lat,
+        longitude=lon,
+        status="awaiting_payment",  # ✅ ИСПРАВЛЕНО
+    )
 
-        for item in cart:
-            OrderItem.objects.create(
-                order=order,
-                watch=item["watch"],
-                quantity=item["quantity"],
-                price=item["price"],
-            )
+    # можно обновить профиль
+    if hasattr(request.user, "profile"):
+        request.user.profile.location = location
+        request.user.profile.phone = phone
+        request.user.profile.save()
 
-        cart.clear()
+    for item in cart:
+        OrderItem.objects.create(
+            order=order,
+            watch=item["watch"],
+            quantity=item["quantity"],
+            price=item["price"],
+        )
 
-        send_telegram_order_notification(order)
+    cart.clear()
 
+    return redirect("payment_page", order_id=order.id)
+
+
+@login_required
+def payment_page(request, order_id):
+    """
+    ШАГ 2:
+    Показываем карту, просим скриншот оплаты.
+    ✅ Защита от повторной загрузки: если чек уже есть — запрещаем.
+    """
+    order = Order.objects.filter(id=order_id, user=request.user).first()
+    if not order:
         return redirect("account")
 
-    return redirect("cart_detail")
+    # ✅ Если заказ уже выше стадии оплаты — назад в аккаунт
+    if order.status in ("accepted", "in_progress", "delivered", "cancelled"):
+        return redirect("account")
+
+    if request.method == "POST":
+        # ✅ Защита от повторной загрузки
+        if order.payment_screenshot:
+            messages.error(request, "Чек уже загружен. Повторная загрузка запрещена.")
+            return redirect("account")
+
+        screenshot = request.FILES.get("payment_screenshot")
+        if not screenshot:
+            messages.error(request, "Загрузите скриншот оплаты")
+            return redirect("payment_page", order_id=order.id)
+
+        order.payment_screenshot = screenshot
+
+        # ✅ После загрузки чека: статус "new" = "Оплачен (на проверке)"
+        order.status = "new"
+        order.save()
+
+        # ✅ Теперь отправляем в Telegram (и фото, и товары)
+        send_telegram_order_notification(order)
+
+        messages.success(request, "Оплата отправлена на проверку")
+        return redirect("account")
+
+    return render(request, "payment.html", {
+        "order": order,
+        "card_number": "5614 6835 1277 8028",
+    })
 
 
 # =========================
@@ -369,32 +436,38 @@ def telegram_webhook(request):
     if order.status in ("cancelled", "delivered"):
         return JsonResponse({"ok": True})
 
+    # ✅ Отклонить оплату можно только когда чек загружен (status == "new")
     if action == "cancel" and order.status == "new":
         order.status = "cancelled"
-        status_text = "❌ <b>Статус:</b> Отменён"
+        order.admin_comment = order.admin_comment or "Оплата отклонена"
+        status_text = "❌ <b>Статус:</b> Оплата отклонена / Отменён"
 
+        # ✅ Уведомление клиенту (если у вас где-то хранится chat_id)
+        _notify_client_if_possible(order, f"❌ Оплата по заказу №{order.id} отклонена. Свяжитесь с продавцом.")
+
+    # ✅ Подтвердить оплату -> accepted
     elif action == "accept" and order.status == "new":
         order.status = "accepted"
-        status_text = "✅ <b>Статус:</b> Принят"
+        order.admin_comment = order.admin_comment or "Оплата подтверждена"
+        status_text = "✅ <b>Статус:</b> Оплата подтверждена"
+
+        # ✅ Авто-уведомление клиенту (если есть chat_id)
+        _notify_client_if_possible(order, f"✅ Оплата по заказу №{order.id} подтверждена. Спасибо!")
 
     elif action == "way" and order.status == "accepted":
         order.status = "in_progress"
         status_text = "🚚 <b>Статус:</b> В пути"
+        _notify_client_if_possible(order, f"🚚 Заказ №{order.id} в пути.")
 
     elif action == "deliver" and order.status == "in_progress":
         order.status = "delivered"
         status_text = "📦 <b>Статус:</b> Доставлен"
+        _notify_client_if_possible(order, f"📦 Заказ №{order.id} доставлен.")
 
     else:
         return JsonResponse({"ok": True})
 
     order.save()
-
-    if order.user and hasattr(order.user, "telegram_id") and order.user.telegram_id:
-        tg_api("sendMessage", {
-            "chat_id": order.user.telegram_id,
-            "text": f"Статус вашего заказа №{order.id}: {order.get_status_display()}",
-        })
 
     items = order.items.select_related("watch").all()
     items_text = "\n".join(
@@ -408,7 +481,7 @@ def telegram_webhook(request):
         map_line = f"\n<b>Карта:</b> <a href=\"{map_url}\">Открыть в Яндекс Картах</a>"
 
     new_text = (
-        f"<b>🕒 Заказ #{order.id}</b>\n\n"
+        f"<b>🧾 Заказ #{order.id}</b>\n\n"
         f"<b>Телефон:</b> {escape(order.phone)}\n"
         f"<b>Адрес:</b> {escape(order.location)}"
         f"{map_line}\n\n"
@@ -419,21 +492,56 @@ def telegram_webhook(request):
 
     keyboard = build_keyboard(order)
 
-    tg_api("editMessageText", {
+    # ✅ Если это сообщение было sendPhoto — editMessageCaption, иначе editMessageText
+    # Мы не знаем точно, поэтому пробуем caption, а если не ок — text.
+    resp = tg_api("editMessageCaption", {
         "chat_id": chat_id,
         "message_id": message_id,
-        "text": new_text,
+        "caption": new_text,
         "parse_mode": "HTML",
-        "disable_web_page_preview": True,
-    })
-
-    tg_api("editMessageReplyMarkup", {
-        "chat_id": chat_id,
-        "message_id": message_id,
         "reply_markup": json.dumps(keyboard),
     })
 
+    if not resp.get("ok"):
+        tg_api("editMessageText", {
+            "chat_id": chat_id,
+            "message_id": message_id,
+            "text": new_text,
+            "parse_mode": "HTML",
+            "disable_web_page_preview": True,
+            "reply_markup": json.dumps(keyboard),
+        })
+
     return JsonResponse({"ok": True})
+
+
+def _notify_client_if_possible(order: Order, text: str):
+    """
+    ✅ Авто-уведомление клиенту при принятии оплаты
+    ВАЖНО: у Django-юзера по умолчанию НЕТ telegram_id.
+    Поэтому уведомляем только если вы где-то сохранили chat_id.
+
+    Варианты:
+    - order.user.profile.telegram_chat_id (если вы добавите поле)
+    - settings.TEST_CLIENT_CHAT_ID (для теста)
+    """
+    try:
+        if not order.user:
+            return
+        profile = getattr(order.user, "profile", None)
+        client_chat_id = None
+
+        if profile and hasattr(profile, "telegram_chat_id"):
+            client_chat_id = getattr(profile, "telegram_chat_id")
+
+        # fallback для теста
+        if not client_chat_id:
+            client_chat_id = getattr(settings, "TEST_CLIENT_CHAT_ID", None)
+
+        if client_chat_id:
+            tg_api("sendMessage", {"chat_id": client_chat_id, "text": text})
+    except Exception:
+        return
 
 
 # =========================
@@ -458,10 +566,3 @@ def account(request):
 def logout_view(request):
     logout(request)
     return redirect("index")
-@ensure_csrf_cookie
-def index(request):
-    return render(request, "index.html")
-
-@ensure_csrf_cookie
-def catalog_page(request):
-    return render(request, "catalog.html")

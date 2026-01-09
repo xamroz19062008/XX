@@ -17,10 +17,10 @@ urlpatterns = [
 
     # оформление и оплата
     path("checkout/", views.checkout, name="checkout"),
+    path("payment/<int:order_id>/", views.payment_page, name="payment_page"),  # ✅ ВАЖНО
     path("payment/callback/", views.payment_callback, name="payment_callback"),
 
     # аккаунт
     path("account/", views.account, name="account"),
-
 
 ]

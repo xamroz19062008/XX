@@ -1,0 +1,119 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Оплата заказа №{{ order.id }} — TIMEPIECE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="{% static 'style.css' %}" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Manrope:wght@300;400;500;600&family=JetBrains+Mono:wght@400&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body>
+    <header class="header glass-panel">
+      <div class="container header-inner">
+        <a href="/" class="logo">TIMEPIECE</a>
+      </div>
+    </header>
+
+    <main class="section">
+      <div class="container">
+        <div class="glass-panel auth-card">
+          <p class="mono about-label">ОПЛАТА ЗАКАЗА</p>
+
+          <h1 class="section-title">Заказ №{{ order.id }}</h1>
+
+          <p class="section-subtitle">
+            Переведите сумму на карту ниже и загрузите скриншот оплаты. После
+            проверки заказ будет принят.
+          </p>
+
+          <!-- Сумма -->
+          <div style="margin-bottom: 24px">
+            <p class="mono" style="opacity: 0.7">Сумма к оплате</p>
+            <div class="price" style="font-size: 28px">
+              {{ order.total_amount }} сум
+            </div>
+          </div>
+
+          <!-- Карта -->
+          <div class="glass-panel" style="padding: 20px; margin-bottom: 28px">
+            <p class="mono" style="opacity: 0.7; margin-bottom: 6px">
+              Номер карты
+            </p>
+            <div class="mono" style="font-size: 22px; letter-spacing: 0.12em">
+              {{ card_number }}
+            </div>
+            <p style="font-size: 13px; opacity: 0.6; margin-top: 8px">
+              Перевод через Click / Payme / Uzcard
+            </p>
+          </div>
+
+          <!-- Товары -->
+          <div style="margin-bottom: 28px">
+            <p class="mono" style="opacity: 0.7; margin-bottom: 8px">
+              Состав заказа
+            </p>
+
+            {% for item in order.items.all %}
+            <div
+              style="
+                display: flex;
+                justify-content: space-between;
+                font-size: 14px;
+                margin-bottom: 6px;
+              "
+            >
+              <span>{{ item.watch.name }} × {{ item.quantity }}</span>
+              <span>{{ item.total_price }} сум</span>
+            </div>
+            {% endfor %}
+          </div>
+
+          <!-- Ошибки -->
+          {% if messages %}
+          <div class="messages">
+            {% for message in messages %}
+            <div class="message warning">{{ message }}</div>
+            {% endfor %}
+          </div>
+          {% endif %}
+
+          <!-- Форма -->
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <div class="form-row">
+              <label>Скриншот оплаты</label>
+              <input
+                type="file"
+                name="payment_screenshot"
+                accept="image/*"
+                required
+              />
+            </div>
+
+            <div style="margin-top: 22px">
+              <button type="submit" class="btn btn-primary">
+                Отправить на проверку
+              </button>
+            </div>
+          </form>
+
+          <p class="auth-footnote">Проверка обычно занимает до 10 минут</p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-bottom mono">© TIMEPIECE, 2025</div>
+    </footer>
+  </body>
+</html>
